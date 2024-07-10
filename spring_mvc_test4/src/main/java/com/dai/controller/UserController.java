@@ -4,11 +4,17 @@ import com.dai.model.User;
 import com.dai.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +75,7 @@ public class UserController {
         return "/index.jsp";
     }
 
-    //GET http://localhost/spring_mvc_test4/show6
+    // GET http://localhost/spring_mvc_test4/show6
     //
     // {
     //  "username":"haohao",
@@ -139,6 +145,63 @@ public class UserController {
     @PostMapping("/show9")
     public String show9(@RequestBody Map map) {
         System.out.println(map);
+        return "/index.jsp";
+    }
+
+    @PostMapping("/user/{id}")
+    public String show9(@PathVariable("id") Integer id) {
+        System.out.println(id);
+        return "/index.jsp";
+    }
+
+
+    @PostMapping("/fileUpload")
+    public String fileUpload(@RequestParam("myFile") MultipartFile myFile) throws IOException {
+        System.out.println(myFile);
+        // 获得上传的文件的流对象
+        InputStream inputStream = myFile.getInputStream();
+        FileOutputStream outputStream = new
+                FileOutputStream("F:\\" + myFile.getOriginalFilename());
+        IOUtils.copy(inputStream, outputStream);
+        // 关闭资源
+        inputStream.close();
+        outputStream.close();
+        return "/index.jsp";
+    }
+
+    // 接收Http请求头数据，接收指定名称的请求头
+    @GetMapping("/headers")
+    public String headers(@RequestHeader("Accept-Encoding") String acceptEncoding){
+        System.out.println("Accept-Encoding:"+acceptEncoding);
+        return "/index.jsp";
+    }
+
+    // 接收所有的请求头信息
+    @GetMapping("/headersMap")
+    public String headersMap(@RequestHeader Map<String,String> map){
+        map.forEach((k,v)->{
+            System.out.println(k+":"+v);
+        });
+        return "/index.jsp";
+    }
+
+    // 获得客户端携带的Cookie数据
+    @GetMapping("/cookies")
+    public String cookies(@CookieValue(value = "JSESSIONID",defaultValue = "") String jsessionid){
+        System.out.println(jsessionid);
+        return "/index.jsp";
+    }
+
+    // 获得转发Request域中数据，在进行资源之间转发时，有时需要将一些参数存储到request域中携带给下一个资源
+    @GetMapping("/request1")
+    public String request1(HttpServletRequest request){
+        //存储数据
+        request.setAttribute("username","阿道夫");
+        return "forward:/request2";
+    }
+    @GetMapping("/request2")
+    public String request2(@RequestAttribute("username") String username){
+        System.out.println(username);
         return "/index.jsp";
     }
 }
